@@ -1,0 +1,427 @@
+<html>
+	<head>
+		<title>Point Interpolation</title>
+<style type="text/css">
+
+body {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	margin: 0;
+	padding: 0;
+	display: block;
+	background-color: rgba(0,0,0,.9);
+}
+
+#interpolate-canvas {
+	cursor: pointer;
+	display: none;
+	position: fixed;
+}
+
+#content {
+	position: fixed;
+	z-index: 1;
+	cursor: pointer;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	height: 100%;
+}
+
+#content > span, #title {
+	color: white;
+	font-weight: 500;
+	font-size: 1.5em;
+	text-shadow: 0px 2px rgba(0,0,0,.3);
+
+	-webkit-user-select: none;  /* Chrome all / Safari all */
+	-moz-user-select: none;     /* Firefox all */
+	-ms-user-select: none;      /* IE 10+ */
+	user-select: none; 
+}
+
+.svg-icon {
+	cursor: pointer;
+	width: 2.5em;
+	height: 2.5em;
+	padding: .5em;
+}
+
+nav {
+	position: fixed;
+	width: 100%;
+	z-index: 2;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+
+	background-color: #E6324B;
+}
+
+#buttons, #website-icon {
+	width: 10em;
+	display: flex;
+	justify-content: flex-end;
+}
+
+#website-icon {
+	justify-content: flex-start;
+}
+
+#website-icon-display {
+	padding: 0px;
+	background-image: url("/static/images/squiglynoopa.svg");
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-size: 4em;
+	margin-left: .5em;
+}
+
+#copyright-info {
+	position: fixed;
+	z-index: 2;
+	color: white;
+
+	bottom: 1em;
+	right: 1em;
+}
+
+#copyright-info a {
+	color: white;
+}
+
+</style>
+	</head>
+	<body onresize="resizeCanvas(event);">
+		<nav>
+			<div id="website-icon">
+				<a href="" id="website-icon-display" class="svg-icon"></a>
+			</div>
+			
+
+			<span id="title">
+				Newton's Point Interpolation
+			</span>
+
+			<div id="buttons">
+			<a href="https://github.com/code-mc/newtoninterpolation">
+		    <svg style="transform:scale(.8);" class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+
+			  <path fill="#FFFFFF" d="M512 0C229.25 0 0 229.25 0 512c0 226.25 146.688 418.125 350.156 485.812 25.594 4.688 34.938-11.125 34.938-24.625 0-12.188-0.469-52.562-0.719-95.312C242 908.812 211.906 817.5 211.906 817.5c-23.312-59.125-56.844-74.875-56.844-74.875-46.531-31.75 3.53-31.125 3.53-31.125 51.406 3.562 78.47 52.75 78.47 52.75 45.688 78.25 119.875 55.625 149 42.5 4.654-33 17.904-55.625 32.5-68.375C304.906 725.438 185.344 681.5 185.344 485.312c0-55.938 19.969-101.562 52.656-137.406-5.219-13-22.844-65.094 5.062-135.562 0 0 42.938-13.75 140.812 52.5 40.812-11.406 84.594-17.031 128.125-17.219 43.5 0.188 87.312 5.875 128.188 17.281 97.688-66.312 140.688-52.5 140.688-52.5 28 70.531 10.375 122.562 5.125 135.5 32.812 35.844 52.625 81.469 52.625 137.406 0 196.688-119.75 240-233.812 252.688 18.438 15.875 34.75 47 34.75 94.75 0 68.438-0.688 123.625-0.688 140.5 0 13.625 9.312 29.562 35.25 24.562C877.438 930 1024 738.125 1024 512 1024 229.25 794.75 0 512 0z" />
+			</svg>
+			</a>
+
+				<a href="https://en.wikipedia.org/wiki/Newton_polynomial">
+				<svg class="svg-icon" viewBox="0 0 24 24">
+				    <path fill="#FFFFFF" d="M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z" />
+				</svg>
+				</a>
+				
+				<svg onclick="refresh();" class="svg-icon" viewBox="0 0 24 24">
+				    <path fill="#FFFFFF" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z" />
+				</svg>	
+			</div>				
+		</nav>
+		
+		<canvas id="interpolate-canvas" onclick="addPoint(event);">
+			
+		</canvas>
+		<div id="content" onclick="addPoint(event);">
+			<span class="content-span">
+				Click anywhere to add points
+			</span>
+		</div>
+		<span id="copyright-info">Made with &#9829; by <a href="http://twitter.com/@codecrafted">CodeCrafted</a></span>
+	</body>
+	<script type="text/javascript">
+
+var appdata = {
+	points: [],
+	zoomlevel: 1.0,
+	canvas: document.getElementById('interpolate-canvas'),
+	content: document.getElementById('content'),
+	ctx: document.getElementById('interpolate-canvas').getContext("2d"),
+	polyCache: {points: [], poly: []},
+	windowSize: {w: 0, h: 0},
+	randomAllowed: true,
+
+	color: {
+		black_overlay: "#66000000",
+		pablo_gebroken_wit: "#F2E3C6",
+		pablo_vleeskleur: "#FFC6A5",
+		pablo_roze: "#E6324B",
+		pablo_green: "#53CD2D",
+		pablo_blue: "#229A82",
+		pablo_donkergrijs: "#2B2B2B",
+		pablo_lichtgrijs: "#353634"
+	}
+};
+
+
+var drawTools = {
+	drawCircle: function(x, y, r, color){
+		var h = appdata.ctx;
+		h.beginPath();
+		h.arc(x, y, r, 0, 2 * Math.PI, false);
+		h.fillStyle = color;
+		h.fill();
+		h.closePath();
+	},
+	drawCircleBorder: function(x, y, r, color, borderwidth){
+		var h = appdata.ctx;
+		h.beginPath();
+		h.arc(x, y, r, 0, 2 * Math.PI, false);
+		h.lineWidth = borderwidth;
+		h.strokeStyle = color;
+		h.stroke();
+		h.closePath();
+	},
+	drawLine: function(x1, y1, x2, y2, color, width){
+		var h = appdata.ctx;
+		h.beginPath();
+		h.moveTo(x1, y1);
+		h.lineTo(x2, y2);
+		h.lineWidth = width;
+		h.strokeStyle = color;
+		h.stroke();
+		h.closePath();
+	},
+	clearCanvas: function(){
+		appdata.ctx.clearRect(0, 0, appdata.ctx.canvas.width, appdata.ctx.canvas.height);
+	}
+};
+
+function refresh(){
+	appdata.canvas.style.display = "none";
+	appdata.content.style.display = "flex";
+
+	appdata.points = [];
+	appdata.polyCache.points = [];
+	appdata.polyCache.poly = [];
+
+	calcInterpolate();
+}
+
+function resizeCanvas(event){
+	var prevw = appdata.windowSize.w;
+	var prevh = appdata.windowSize.h;
+	var neww = window.innerWidth;
+	var newh = window.innerHeight;
+
+	if(prevw != 0 && prevh != 0){
+		var dw = (neww - prevw) / 2;
+		var dh = (newh - prevh) / 2;
+
+		if(Math.abs(dw) > 5 || Math.abs(dh) > 5){
+			console.log("recalc");
+			appdata.resized = true;
+
+			appdata.polyCache.points = [];
+
+			appdata.windowSize.w = neww;
+			appdata.windowSize.h = newh;
+
+			for(var i = 0; i < appdata.points.length; i++){
+				var p = appdata.points[i];
+				p[0] += dw;
+				p[1] += dh;
+			}	
+		}		
+	}else{
+		appdata.windowSize.w = neww;
+		appdata.windowSize.h = newh;
+	}
+
+	appdata.ctx.canvas.width = neww;
+	appdata.ctx.canvas.height = newh;
+
+	calcInterpolate();
+}
+resizeCanvas(null);
+
+function showRandomCurve(){
+	if(appdata.randomAllowed){
+		var pointcount = parseInt(3 + Math.random() * 4);
+
+		if(pointcount == appdata.points.length){
+			pointcount += 1;
+		}
+
+		var width = window.innerWidth / pointcount;
+		var points = [];
+		for(var i = 0; i < pointcount; i++){
+			var x = width * i + width * Math.random();
+			var y = window.innerHeight * Math.random();
+			points.push([x,y]);
+		}
+
+		appdata.canvas.style.display = "block";
+
+		var delay = 0;
+		if(!appdata.points || appdata.points.length == 0){
+			appdata.points = [points[0]];
+			calcInterpolate();
+			delay = 400;
+		}
+
+		setTimeout(function() {
+			appdata.points = points;
+			calcInterpolate();
+			setTimeout(function() {showRandomCurve();}, 2500);
+		}, delay);	
+	}
+}
+
+showRandomCurve();
+
+function addPoint(event) {
+	if(appdata.randomAllowed){
+		appdata.points = [];
+		appdata.polyCache.points = [];
+		appdata.randomAllowed = false;
+	}
+
+	appdata.canvas.style.display = "block";
+	appdata.content.style.display = "none";
+
+	var x = event.layerX;
+	var y = event.layerY;
+	console.log(x, y);
+
+	appdata.points.push([x, y]);
+
+
+	calcInterpolate();
+}
+
+function calcInterpolate(){
+	var p = appdata.points;
+	var prev = null;
+
+	if(p.length != appdata.polyCache.points.length){
+		appdata.polyCache.points = p.slice(0);
+		prev = appdata.polyCache.poly.slice(0);
+		var xs = [];
+		var ys = [];
+		for (var i = 0; i < appdata.points.length; i++) {
+			var pt = appdata.points[i];
+			xs.push(pt[0]);
+			ys.push(pt[1]);
+		}
+
+		var ch = [];
+		newton(0, xs.length-1, xs, ys, ch);
+		//console.log(ch);
+		var poly = getPolynom(ch, xs);
+		//console.log(poly);
+
+		var points = [];
+		for(var x = 0; x < appdata.ctx.canvas.width; x++){
+			points.push(interpolate(poly, x));
+		}
+		appdata.polyCache.poly = points;
+	}else{
+		//console.log("drawing from cache");
+		//console.log(appdata.polyCache.points.length, p.length);
+	}
+
+	drawTools.clearCanvas();
+
+	if(appdata.points.length > 1 && prev != null && !appdata.resized){
+		transition(prev, appdata.polyCache.poly, appdata.points);
+	}else{
+		appdata.resized = false;
+		for(var x = 0; x < appdata.polyCache.poly.length-1; x++){
+			drawTools.drawLine(x, appdata.polyCache.poly[x], x+1, appdata.polyCache.poly[x+1], appdata.color.pablo_blue, 5);
+		}
+		for (var i = 0; i < appdata.points.length; i++) {
+			var l = appdata.points[i];
+			drawTools.drawCircle(l[0], l[1], 8, appdata.color.pablo_roze);
+		}
+	}
+
+}
+
+function transition(prev, newp, points){
+	var offsets = [];
+
+	for(var i = 0; i < prev.length; i++){
+		offsets.push(newp[i] - prev[i]);
+	}
+
+	function temp(prev, offsets, progress, time){
+		drawTools.clearCanvas();
+
+		if(progress <= 0) progress = 0;
+
+		for(var x = 0; x < prev.length-1; x++){
+			var newy1 = prev[x] + (1 - (progress/time)) * offsets[x];
+			var newy2 = prev[x+1] + (1 - (progress/time)) * offsets[x+1];
+
+			drawTools.drawLine(x, newy1, 
+				x+1, newy2, appdata.color.pablo_blue, 5
+			);
+		}
+
+		for (var i = 0; i < appdata.points.length; i++) {
+			var l = appdata.points[i];
+			drawTools.drawCircle(l[0], l[1], 8, appdata.color.pablo_roze);
+		}
+
+		if(progress > 0){
+			setTimeout(function() {
+				temp(prev, offsets, progress - 16, time);
+			}, 16);
+		}
+	}
+
+	temp(prev, offsets, 300, 300);
+}
+
+function interpolate(polynom, val){
+	var r = 0;
+	for(var i = 0; i < polynom.length; i++){
+		var fac = polynom[i].val;
+		for(var j = 0; j < polynom[i].vars.length; j++){
+			fac *= (polynom[i].vars[j] + val);
+		}
+		r += fac;
+	}
+	return r;
+}
+
+function getPolynom(cache, xs){
+	var poly = [];
+	for(var i = 0; i < cache.length; i++){
+		var val = cache[i].val;
+
+		var pb = {val: val, vars: []};
+		for(var j = 0; j < i; j++){
+			pb.vars.push(-xs[j]);
+		}
+		poly.push(pb);
+	}
+	return poly;
+}
+
+function newton(i1, i2, xs, ys, cache){
+	if(i1 == i2){
+		if(i1 == 0) cache.push({range: [i1, i2], val: ys[i1]});
+		return ys[i1];
+	} else 
+	{
+		var res = (newton(i1+1, i2, xs, ys, cache) - 
+				   newton(i1, i2-1, xs, ys, cache)) / 
+			   	  (xs[i2] - xs[i1]);
+		if(i1 == 0){
+			cache.push({range: [i1, i2], val: res});
+		}
+		return res;
+	}
+}
+
+	</script>
+</html>
