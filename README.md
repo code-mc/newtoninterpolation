@@ -24,4 +24,4 @@ Then again, it is mathematics, so I completely understand if this is boring to y
 
 # License
 
-Released under the [Apache 2.0 License](https://github.com/code-mc/loadtoast/blob/master/license.md)
+Released under the [Apache 2.0 License](https://github.com/code-mc/newtoninterpolation/blob/master/license.md)
